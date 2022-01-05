@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./EPS.sol";  
+import "@epsproxy/contracts/EPS.sol";
 
 /**
  * @dev The EPS Register contract.
