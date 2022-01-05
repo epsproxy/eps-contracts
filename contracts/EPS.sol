@@ -8,15 +8,15 @@ pragma solidity ^0.8.9;
  */
 interface EPS {
   // Emitted when an address nominates a proxy address:
-  event NominationMade(address indexed nominator, address indexed proxy, uint256 timestamp);
+  event NominationMade(address indexed nominator, address indexed proxy, uint256 timestamp, uint256 provider);
   // Emitted when an address accepts a proxy nomination:
-  event NominationAccepted(address indexed nominator, address indexed proxy, address indexed delivery, uint256 timestamp);
+  event NominationAccepted(address indexed nominator, address indexed proxy, address indexed delivery, uint256 timestamp, uint256 provider);
   // Emitted when the proxy address updates the delivery address on a record:
-  event DeliveryUpdated(address indexed nominator, address indexed proxy, address indexed delivery, address oldDelivery, uint256 timestamp);
+  event DeliveryUpdated(address indexed nominator, address indexed proxy, address indexed delivery, address oldDelivery, uint256 timestamp, uint256 provider);
   // Emitted when a nomination record is deleted. initiator 0 = nominator, 1 = proxy:
-  event NominationDeleted(uint256 initiator, address indexed nominator, address indexed proxy, uint256 timestamp);
+  event NominationDeleted(string initiator, address indexed nominator, address indexed proxy, uint256 timestamp, uint256 provider);
   // Emitted when a register record is deleted. initiator 0 = nominator, 1 = proxy:
-  event RecordDeleted(uint256 initiator, address indexed nominator, address indexed proxy, address indexed delivery, uint256 timestamp);
+  event RecordDeleted(string initiator, address indexed nominator, address indexed proxy, address indexed delivery, uint256 timestamp, uint256 provider);
   // Emitted when the register fee is set:
   event RegisterFeeSet(uint256 indexed registerFee);
   // Emitted when the treasury address is set:
@@ -43,11 +43,11 @@ interface EPS {
   function getAddressesForCaller() external view returns (address nominator, address delivery, bool isProxied);
   function getRole(address _roleAddress) external view returns (string memory currentRole);
   function getRoleForCaller() external view returns (string memory currentRole);
-  function makeNomination(address _proxy) external payable;
-  function acceptNomination(address _nominator, address _delivery) external;
-  function updateDeliveryAddress(address _delivery) external;
-  function deleteRecordByNominator() external;
-  function deleteRecordByProxy() external;
+  function makeNomination(address _proxy, uint256 _provider) external payable;
+  function acceptNomination(address _nominator, address _delivery, uint256 _provider) external;
+  function updateDeliveryAddress(address _delivery, uint256 _provider) external;
+  function deleteRecordByNominator(uint256 _provider) external;
+  function deleteRecordByProxy(uint256 _provider) external;
   function setRegisterFee(uint256 _registerFee) external returns (bool);
   function getRegisterFee() external view returns (uint256 _registerFee);
   function setTreasuryAddress(address _treasuryAddress) external returns (bool);

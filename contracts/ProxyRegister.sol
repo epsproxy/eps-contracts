@@ -3,7 +3,7 @@
 
 pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./EPS.sol";
+import "./EPS.sol";  
 
 /**
  * @dev The EPS Register contract.
@@ -230,65 +230,65 @@ contract ProxyRegister is EPS, Ownable {
   /**
   * @dev The nominator initiaties a proxy entry
   */
-  function makeNomination(address _proxy) external payable isNotCurrentNominator(msg.sender) isNotCurrentProxy(_proxy) isNotCurrentProxy(msg.sender) {
+  function makeNomination(address _proxy, uint256 _provider) external payable isNotCurrentNominator(msg.sender) isNotCurrentProxy(_proxy) isNotCurrentProxy(msg.sender) {
     require (_proxy != address(0), "Proxy address must be provided");
     require (_proxy != msg.sender, "Proxy address cannot be the same as Nominator address");
     require(msg.value == registerFee, "Register fee must be paid");
     nominatorToProxy[msg.sender] = _proxy;
-    emit NominationMade(msg.sender, _proxy, block.timestamp);
+    emit NominationMade(msg.sender, _proxy, block.timestamp, _provider); 
   }
 
   /**
   * @dev Proxy accepts nomination
   */
-  function acceptNomination(address _nominator, address _delivery) external isNotCurrentProxy(msg.sender) isNotCurrentProxy(_nominator) {
+  function acceptNomination(address _nominator, address _delivery, uint256 _provider) external isNotCurrentProxy(msg.sender) isNotCurrentProxy(_nominator) {
     // The nominator must be passed in:
     require (_nominator != address(0), "Nominator address must be provided");
     // The sender must match the proxy nomination:
     require (nominatorToProxy[_nominator] == msg.sender, "Caller is not the nominated proxy for this nominator");
     // We have a valid nomination, create the ProxyRegisterItem:
     proxyToRecord[msg.sender] = Record(_nominator, _delivery);
-    emit NominationAccepted(_nominator, msg.sender, _delivery, block.timestamp);
+    emit NominationAccepted(_nominator, msg.sender, _delivery, block.timestamp, _provider);
   }
 
   /**
   * @dev Change delivery address on an existing proxy item. Can only be called by the proxy address.
   */
-  function updateDeliveryAddress(address _delivery) external isExistingProxy(msg.sender) {
+  function updateDeliveryAddress(address _delivery, uint256 _provider) external isExistingProxy(msg.sender) {
     Record memory priorItem = proxyToRecord[msg.sender];
     proxyToRecord[msg.sender].delivery = _delivery;
-    emit DeliveryUpdated(priorItem.nominator, msg.sender, _delivery, priorItem.delivery, block.timestamp);
+    emit DeliveryUpdated(priorItem.nominator, msg.sender, _delivery, priorItem.delivery, block.timestamp, _provider);
   }
 
   /**
   * @dev delete a proxy entry. BOTH the nominator and proxy can delete a proxy arrangement and all
   * aspects of that proxy arrangement will be removed.
   */
-  function deleteRecordByNominator() external isExistingNominator(msg.sender) {
-    deleteProxyRegisterItems(msg.sender, nominatorToProxy[msg.sender], 0);
+  function deleteRecordByNominator(uint256 _provider) external isExistingNominator(msg.sender) {
+    deleteProxyRegisterItems(msg.sender, nominatorToProxy[msg.sender], "nominator", _provider);
   }
 
   /**
   * @dev delete a proxy entry. BOTH the nominator and proxy can delete a proxy arrangement and all
   * aspects of that proxy arrangement will be removed.
   */
-  function deleteRecordByProxy() external isExistingProxy(msg.sender) {
-    deleteProxyRegisterItems(proxyToRecord[msg.sender].nominator, msg.sender, 1);
+  function deleteRecordByProxy(uint256 _provider) external isExistingProxy(msg.sender) {
+    deleteProxyRegisterItems(proxyToRecord[msg.sender].nominator, msg.sender, "proxy", _provider);
   }
 
   /**
   * @dev delete the nomination and record (if present)
   */
-  function deleteProxyRegisterItems(address _nominator, address _proxy, uint256 _initiator) internal {
+  function deleteProxyRegisterItems(address _nominator, address _proxy, string memory _initiator, uint256 _provider) internal {
     // First remove the nomination. We know this must exists, as it has to come before the proxy can be accepted:
     delete nominatorToProxy[_nominator];
-    emit NominationDeleted(_initiator, _nominator, _proxy, block.timestamp);
+    emit NominationDeleted(_initiator, _nominator, _proxy, block.timestamp, _provider);
     // Now remove the proxy register item. If the nominator is deleting a nomination that has not been accepted by a proxy
     // then this will not exists. Check that the proxy is for this nominator.
     if (proxyToRecord[_proxy].nominator == _nominator) {
       address deletedDelivery = proxyToRecord[_proxy].delivery; 
       delete proxyToRecord[_proxy];
-      emit RecordDeleted(_initiator, _nominator, _proxy, deletedDelivery, block.timestamp);
+      emit RecordDeleted(_initiator, _nominator, _proxy, deletedDelivery, block.timestamp, _provider);
     }
   }
 
