@@ -1,21 +1,30 @@
-// SPDX-License-Identifier: BUSL-1.1
-// EPSProxy Contracts v1.0.0 (epsproxy/eps-contracts/contracts/Proxiable.sol)
+// SPDX-License-Identifier: MIT
+// EPSProxy Contracts v1.6.0 (epsproxy/contracts/Proxiable.sol)
 
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/Context.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "./EPS.sol";
+import "@epsproxy/contracts/EPS.sol";
 
 /**
- * Contract module which allows children to implement calls to the EPS
+ * @dev Contract module which allows children to implement calls to the EPS
  * proxy registry
  */
 
 abstract contract Proxiable is Context {
   
-  EPS eps = EPS(0x8AA42062fe37bB4E983058F96672EfDC929fDEe0); // Include the address of the EPS Proxy Registry
+  EPS eps; // Address for the relevant chain passed in on the constructor.
+
+  /**
+  * @dev Constructor initialises the register contract object
+  */
+  constructor(
+    address _epsRegisterAddress
+  ) {
+    eps = EPS(_epsRegisterAddress); 
+  }
 
   /**
   * @dev Returns the proxied address details (nominator and delivery address) for a passed proxy address  
@@ -48,7 +57,7 @@ abstract contract Proxiable is Context {
   * passed in if no proxy record exists, IF we have been passed a bool indicating
   * that a proxied address is in use. This fuction should be used in conjunction with an off-chain call
   * to proxyRecordExists that determines if a proxy address is in use, which is then passed in on the call 
-  * to the contract inheriting this method . This saves gas for anyone who is NOT using a proxy as we do not needlessly check for proxy details.
+  * to the contract inheriting this method. This saves gas for anyone who is NOT using a proxy as we do not needlessly check for proxy details.
   */
   function ERC20BalanceOfNominatorSwitched(address _receivedAddress, address _tokenContract, bool _isProxied) internal virtual view returns (uint256 _tokenBalance){
     if (_isProxied) {

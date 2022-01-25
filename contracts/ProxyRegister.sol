@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-// EPSProxy Contracts v1.0.0 (epsproxy/eps-contracts/contracts/ProxyRegister.sol)
+// EPSProxy Contracts v1.6.0 (epsproxy/contracts/ProxyRegister.sol)
 
 pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";

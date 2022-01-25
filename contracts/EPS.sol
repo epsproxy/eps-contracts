@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// EPSProxy Contracts v1.0.0 (epsproxy/eps-contracts/contracts/EPS.sol)
+// EPSProxy Contracts v1.6.0 (epsproxy/contracts/EPS.sol)
 
 pragma solidity ^0.8.9;
 
@@ -35,6 +35,7 @@ interface EPS {
   function getProxyRecord(address _proxy) external view returns (address nominator, address proxy, address delivery);
   function getProxyRecordForCaller() external view returns (address nominator, address proxy, address delivery);
   function getNominatorRecord(address _nominator) external view returns (address nominator, address proxy, address delivery);
+  function getNominatorRecordForCaller() external view returns (address nominator, address proxy, address delivery);
   function addressIsActive(address _receivedAddress) external view returns (bool);
   function addressIsActiveForCaller() external view returns (bool);
   function getNomination(address _nominator) external view returns (address proxy);

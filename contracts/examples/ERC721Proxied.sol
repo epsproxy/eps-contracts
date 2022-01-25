@@ -1,17 +1,26 @@
 // SPDX-License-Identifier: MIT
-// EPSProxy Contracts v1.0.0 (epsproxy/eps-contracts/contracts/ERC721Proxied.sol)
+// EPSProxy Contracts v1.6.0 (epsproxy/contracts/examples/ERC721Proxied.sol)
 
 pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./Proxiable.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@epsproxy/contracts/Proxiable.sol";
 
 /**
- * Contract module which allows children to implement proxied delivery
+ * @dev Contract module which allows children to implement proxied delivery
  * on minting calls
  */
-abstract contract ERC20Proxied is Context, ERC20, Proxiable {
+abstract contract ERC721Proxied is Context, ERC721, Proxiable {
+
+  constructor(
+    address _epsRegisterAddress,
+    string memory _name,
+    string memory _symbol
+  ) Proxiable(_epsRegisterAddress) 
+    ERC721("_name", "_symbol") 
+  { 
+  }
 
   /**
   * @dev Returns the proxied address details (nominator address, delivery address) for a passed proxy address.  
@@ -31,12 +40,12 @@ abstract contract ERC20Proxied is Context, ERC20, Proxiable {
   /**
   * @dev call safemint after determining the delivery address.
   */
-  function _mintProxied(address _account, uint256 _amount) internal virtual {
+  function _safeMintProxied(address _to, uint256 _tokenId) internal virtual {
     address nominator;
     address delivery;
     bool isProxied;
-    (nominator, delivery, isProxied) = getAddresses(_account);
-    _mint(delivery, _amount);
+    (nominator, delivery, isProxied) = getAddresses(_to);
+    _safeMint(delivery, _tokenId);
   }
 
   /**
@@ -45,12 +54,12 @@ abstract contract ERC20Proxied is Context, ERC20, Proxiable {
   * to _proxyRecordExists that determines if a proxy address is in use. This saves gas for anyone who is
   * NOT using a proxy as we do not needlessly check for proxy details.
   */
-  function _MintProxiedSwitch(address _account, uint256 _amount, bool _isProxied) internal virtual {
+  function _safeMintProxiedSwitch(address _to, uint256 _tokenId, bool _isProxied) internal virtual {
     if (_isProxied) {
-      _mintProxied(_account, _amount);
+      _safeMintProxied(_to, _tokenId);
     }
     else {
-      _mint(_account, _amount);
+      _safeMint(_to, _tokenId);
     }
   }
 }
