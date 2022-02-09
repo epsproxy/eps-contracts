@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// EPSProxy Contracts v1.6.0 (epsproxy/contracts/EPS.sol)
+// EPSProxy Contracts v1.7.0 (epsproxy/contracts/EPS.sol)
 
 pragma solidity ^0.8.9;
 
@@ -21,8 +21,6 @@ interface EPS {
   event RegisterFeeSet(uint256 indexed registerFee);
   // Emitted when the treasury address is set:
   event TreasuryAddressSet(address indexed treasuryAddress);
-  // Emitted when bypass status is set:
-  event BypassSet(bool indexed bypassStatus, uint256 timestamp);
   // Emitted on withdrawal to the treasury address:
   event Withdrawal(uint256 indexed amount, uint256 timestamp);
 
@@ -53,8 +51,5 @@ interface EPS {
   function getRegisterFee() external view returns (uint256 _registerFee);
   function setTreasuryAddress(address _treasuryAddress) external returns (bool);
   function getTreasuryAddress() external view returns (address _treasuryAddress);
-  function setBypassOn() external returns (bool);
-  function setBypassOff() external returns (bool);
-  function getBypass() external view returns (bool bypassStatus);
   function withdraw(uint256 _amount) external returns (bool);
 }

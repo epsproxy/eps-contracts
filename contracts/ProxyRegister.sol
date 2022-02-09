@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: BUSL-1.1
-// EPSProxy Contracts v1.6.0 (epsproxy/contracts/ProxyRegister.sol)
+// EPSProxy Contracts v1.7.0 (epsproxy/contracts/ProxyRegister.sol)
 
 pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -17,7 +17,6 @@ contract ProxyRegister is EPS, Ownable {
 
   uint256 private registerFee;
   address private treasury;
-  bool    private bypass;
 
   mapping (address => address) nominatorToProxy;
   mapping (address => Record) proxyToRecord;
@@ -31,7 +30,6 @@ contract ProxyRegister is EPS, Ownable {
   ) {
     setRegisterFee(_registerFee);
     setTreasuryAddress(_treasury);
-    bypass = false;
   }
 
   /** 
@@ -180,18 +178,13 @@ contract ProxyRegister is EPS, Ownable {
   * @dev Returns the proxied address details (nominator and delivery address) for a passed proxy address  
   */
   function getAddresses(address _receivedAddress) public view returns (address nominator, address delivery, bool isProxied) {
-    if (bypass) {
+    require(!nominationExists(_receivedAddress), "Nominator address cannot interact directly, only through the proxy address");
+    Record memory currentItem = proxyToRecord[_receivedAddress];
+    if (proxyToRecord[_receivedAddress].nominator == address(0)) {
       return(_receivedAddress, _receivedAddress, false);
-    }  
+    }
     else {
-      require(!nominationExists(_receivedAddress), "Nominator address cannot interact directly, only through the proxy address");
-      Record memory currentItem = proxyToRecord[_receivedAddress];
-      if (proxyToRecord[_receivedAddress].nominator == address(0)) {
-        return(_receivedAddress, _receivedAddress, false);
-      }
-      else {
-        return (currentItem.nominator, currentItem.delivery, true);
-      }
+      return (currentItem.nominator, currentItem.delivery, true);
     }
   }
 
@@ -326,35 +319,6 @@ contract ProxyRegister is EPS, Ownable {
   */
   function getTreasuryAddress() external view returns (address _treasuryAddress) {
     return(treasury);
-  }
-
-  /**
-  * @dev turn bypass on:
-  */
-  function setBypassOn() external onlyOwner returns (bool)
-  {
-    require(!bypass, "Bypass already on");
-    bypass = true;
-    emit BypassSet(true, block.timestamp);
-    return true;
-  }
-
-  /**
-  * @dev turn bypass off:
-  */
-  function setBypassOff() external onlyOwner returns (bool)
-  {
-    require(bypass, "Bypass already off");
-    bypass = false;
-    emit BypassSet(false, block.timestamp);
-    return true;
-  }
-
-  /**
-  * @dev return the bypass status:
-  */
-  function getBypass() external view returns (bool bypassStatus) {
-    return(bypass);
   }
 
   /**

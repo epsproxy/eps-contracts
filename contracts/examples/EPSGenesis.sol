@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// EPSProxy Contracts v1.6.0 (epsproxy/contracts/examples/EPSGenesis.sol)
+// EPSProxy Contracts v1.8.0 (epsproxy/contracts/examples/EPSGenesis.sol)
 
 pragma solidity ^0.8.9;
 
@@ -158,7 +158,7 @@ contract EPSGenesis is ERC1155, Ownable, ERC1155Burnable, ERC1155Supply, Proxiab
     address delivery;
     bool isProxied;
     (nominator, delivery, isProxied) = getAddresses(_receivedAddress);
-    return((IERC721(GATE_1).balanceOf(_receivedAddress) >= 1 || IERC721(GATE_2).balanceOf(_receivedAddress) >= 1 || IERC721(GATE_3).balanceOf(_receivedAddress) >= 1));
+    return((IERC721(GATE_1).balanceOf(nominator) >= 1 || IERC721(GATE_2).balanceOf(nominator) >= 1 || IERC721(GATE_3).balanceOf(nominator) >= 1));
   }
 
   function addressStatus(address _receivedAddress) public view returns (bool open, bool gated, bool proxy, bool eligible) {
