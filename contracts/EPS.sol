@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
-// EPSProxy Contracts v1.7.0 (epsproxy/contracts/EPS.sol)
+// EPSProxy Contracts v1.11.0 (epsproxy/contracts/EPS.sol)
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.13;
+
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 /**
  * @dev Implementation of the EPS register interface.
@@ -19,10 +21,12 @@ interface EPS {
   event RecordDeleted(string initiator, address indexed nominator, address indexed proxy, address indexed delivery, uint256 timestamp, uint256 provider);
   // Emitted when the register fee is set:
   event RegisterFeeSet(uint256 indexed registerFee);
+  event RegisterFeeOatSet(uint256 indexed registerFeeOat);
   // Emitted when the treasury address is set:
   event TreasuryAddressSet(address indexed treasuryAddress);
   // Emitted on withdrawal to the treasury address:
   event Withdrawal(uint256 indexed amount, uint256 timestamp);
+  event TokenWithdrawal(uint256 indexed amount, address indexed tokenAddress, uint256 timestamp);
 
   function nominationExists(address _nominator) external view returns (bool);
   function nominationExistsForCaller() external view returns (bool);
@@ -49,7 +53,11 @@ interface EPS {
   function deleteRecordByProxy(uint256 _provider) external;
   function setRegisterFee(uint256 _registerFee) external returns (bool);
   function getRegisterFee() external view returns (uint256 _registerFee);
+  function setRegisterFeeOat(uint256 _registerFeeOat) external returns (bool);
+  function getRegisterFeeOat() external view returns (uint256 _registerFeeOat);
+
   function setTreasuryAddress(address _treasuryAddress) external returns (bool);
   function getTreasuryAddress() external view returns (address _treasuryAddress);
   function withdraw(uint256 _amount) external returns (bool);
+  function withdrawERC20(IERC20 _token, uint256 _amountToWithdraw) external;
 }

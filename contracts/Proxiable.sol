@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// EPSProxy Contracts v1.7.0 (epsproxy/contracts/Proxiable.sol)
+// EPSProxy Contracts v1.11.0 (epsproxy/contracts/Proxiable.sol)
 
 pragma solidity ^0.8.9;
 

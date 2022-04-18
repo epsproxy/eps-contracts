@@ -1,21 +1,24 @@
 // SPDX-License-Identifier: BUSL-1.1
-// EPSProxy Contracts v1.7.0 (epsproxy/contracts/ProxyRegister.sol)
+// EPSProxy Contracts v1.11.0 (epsproxy/contracts/ProxyRegister.sol)
 
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.13;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@epsproxy/contracts/EPS.sol";
+import "@omnus/contracts/token/ERC20Spendable/ERC20SpendableReceiver.sol"; 
 
 /**
  * @dev The EPS Register contract.
  */
-contract ProxyRegister is EPS, Ownable {
+contract ProxyRegister is EPS, Ownable, ERC20SpendableReceiver {
+  using SafeERC20 for IERC20;
 
   struct Record {
     address nominator;
-    address delivery;
+    address delivery; 
   }
 
   uint256 private registerFee;
+  uint256 private registerFeeOat;
   address private treasury;
 
   mapping (address => address) nominatorToProxy;
@@ -26,9 +29,14 @@ contract ProxyRegister is EPS, Ownable {
   */
   constructor(
     uint256 _registerFee,
-    address _treasury
-  ) {
+    uint256 _registerFeeOat,
+    address _treasury,
+    address _ERC20Spendable
+  ) 
+    ERC20SpendableReceiver(_ERC20Spendable) 
+  {
     setRegisterFee(_registerFee);
+    setRegisterFeeOat(_registerFeeOat);
     setTreasuryAddress(_treasury);
   }
 
@@ -223,14 +231,34 @@ contract ProxyRegister is EPS, Ownable {
   /**
   * @dev The nominator initiaties a proxy entry
   */
-  function makeNomination(address _proxy, uint256 _provider) external payable isNotCurrentNominator(msg.sender) isNotCurrentProxy(_proxy) isNotCurrentProxy(msg.sender) {
-    require (_proxy != address(0), "Proxy address must be provided");
-    require (_proxy != msg.sender, "Proxy address cannot be the same as Nominator address");
+  function makeNomination(address _proxy, uint256 _provider) external payable {
     require(msg.value == registerFee, "Register fee must be paid");
-    nominatorToProxy[msg.sender] = _proxy;
-    emit NominationMade(msg.sender, _proxy, block.timestamp, _provider); 
+
+    performNomination(msg.sender, _proxy, _provider);
   }
 
+  /**
+  * @dev The nominator initiaties a proxy entry, paying with ERC20
+  */
+  function receiveSpendableERC20(address _caller, uint256 _tokenPaid, uint256[] memory _arguments) override external onlyERC20Spendable(msg.sender) returns(bool, uint256[] memory) { 
+    require(_tokenPaid == registerFeeOat, "Register fee must be paid");
+
+    performNomination(_caller, address(uint160(_arguments[0])), _arguments[1]);
+
+    return(true, new uint256[](0)); 
+  }
+
+  /**
+  * @dev Process the nomination
+  */
+  function performNomination(address _nominator, address _proxy, uint256 _provider) internal isNotCurrentNominator(_nominator) isNotCurrentProxy(_proxy) isNotCurrentProxy(_nominator) {
+    require (_proxy != address(0), "Proxy address must be provided");
+    require (_proxy != _nominator, "Proxy address cannot be the same as Nominator address");
+
+    nominatorToProxy[_nominator] = _proxy;
+    emit NominationMade(_nominator, _proxy, block.timestamp, _provider); 
+  }
+  
   /**
   * @dev Proxy accepts nomination
   */
@@ -297,10 +325,28 @@ contract ProxyRegister is EPS, Ownable {
   }
 
   /**
+  * @dev set the OAT fee for initiating a registration (accepting a proxy, updating the delivery address and deletions will always be free)
+  */
+  function setRegisterFeeOat(uint256 _registerFeeOat) public onlyOwner returns (bool)
+  {
+    require(_registerFeeOat != registerFeeOat, "No change to register fee");
+    registerFeeOat = _registerFeeOat;
+    emit RegisterFeeOatSet(_registerFeeOat);
+    return true;
+  }
+
+  /**
   * @dev return the register fee:
   */
   function getRegisterFee() external view returns (uint256 _registerFee) {
     return(registerFee);
+  }
+
+    /**
+  * @dev return the OAT register fee:
+  */
+  function getRegisterFeeOat() external view returns (uint256 _registerFeeOat) {
+    return(registerFeeOat);
   }
 
   /**
@@ -329,6 +375,14 @@ contract ProxyRegister is EPS, Ownable {
     require(success, "Withdrawal failed.");
     emit Withdrawal(_amount, block.timestamp);
     return true;
+  }
+
+  /**
+  * @dev Allow any token payments to be withdrawn:
+  */
+  function withdrawERC20(IERC20 _token, uint256 _amountToWithdraw) external onlyOwner {
+    _token.safeTransfer(treasury, _amountToWithdraw); 
+    emit TokenWithdrawal(_amountToWithdraw, address(_token), block.timestamp);
   }
 
   /**

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// EPSProxy Contracts v1.8.0 (epsproxy/contracts/examples/EPSExample721.sol)
+// EPSProxy Contracts v1.11.0 (epsproxy/contracts/examples/EPSExample721.sol)
 
 pragma solidity ^0.8.9;
 
